@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Zone & Guest Simulation API
-  description: API for simulating guests and monitoring zone occupancy in a virtual park.
+  title: LiveZone API
   version: 1.0.0
+  description: API to manage zones and guests in a simulated live zone system.
 
 servers:
   - url: http://localhost:8080
@@ -11,6 +11,8 @@ paths:
   /zones:
     get:
       summary: Get all zones
+      tags:
+        - Zones
       responses:
         '200':
           description: A list of all zones
@@ -23,17 +25,19 @@ paths:
 
   /zones/occupancy/{id}:
     get:
-      summary: Get occupancy status of a zone
+      summary: Get occupancy info for a zone
+      tags:
+        - Zones
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
-          description: Zone ID
           schema:
             type: string
+          description: ID of the zone
       responses:
         '200':
-          description: Zone status details
+          description: Zone occupancy details
           content:
             application/json:
               schema:
@@ -44,65 +48,73 @@ paths:
   /zones/averageTimeSpent/{id}:
     get:
       summary: Get average time spent in a zone
+      tags:
+        - Zones
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
-          description: Zone ID
           schema:
             type: string
       responses:
         '200':
-          description: Average duration
+          description: Average time spent in the zone
           content:
             application/json:
               schema:
                 type: number
                 format: float
-        '404':
-          description: Zone not found
+        '204':
+          description: No data for this zone
 
   /zones/hotspots:
     get:
-      summary: Get hotspots (zones that are crowded or full)
+      summary: Get all full zones (hotspots)
+      tags:
+        - Zones
       responses:
         '200':
-          description: A list of crowded or full zones
+          description: List of hotspot zones
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/ZoneStatusDto'
+        '204':
+          description: No hotspots found
 
   /zones/change-capacity/{id}:
     post:
-      summary: Change the capacity of a zone
+      summary: Change zone capacity
+      tags:
+        - Zones
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
-          description: Zone ID
           schema:
             type: string
-        - name: newCapacity
-          in: query
+        - in: query
+          name: newCapacity
           required: true
-          description: New capacity for the zone
           schema:
             type: integer
+            minimum: 1
       responses:
         '200':
           description: Capacity changed successfully
-        '400':
-          description: Invalid input or zone cannot shrink
+        '204':
+          description: Could not change capacity
 
   /guests:
     get:
-      summary: Get all active guests
+      summary: Get all guests
+      tags:
+        - Guests
       responses:
         '200':
-          description: A list of all current guests
+          description: A list of all guests
           content:
             application/json:
               schema:
@@ -112,12 +124,20 @@ paths:
 
   /guests/simulate-move:
     post:
-      summary: Simulate guest movement
+      summary: Simulate guest movements
+      tags:
+        - Guests
       responses:
         '200':
-          description: Guest movement simulated
-        '500':
-          description: Server error during simulation
+          description: Guests moved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Guest'
+        '204':
+          description: No guests were moved
 
 components:
   schemas:
@@ -132,12 +152,10 @@ components:
           type: integer
         currentGuestCount:
           type: integer
-        threshold:
-          type: number
-          format: float
-        averageDuration:
-          type: number
-          format: float
+        adjacentZoneWeights:
+          type: object
+          additionalProperties:
+            type: integer
 
     Guest:
       type: object
@@ -146,8 +164,6 @@ components:
           type: string
         currentZoneId:
           type: string
-        timeToLive:
-          type: integer
         timeAlive:
           type: integer
 
@@ -162,9 +178,5 @@ components:
           type: integer
         currentGuestCount:
           type: integer
-        occupancyPercent:
-          type: number
-          format: float
         status:
           type: string
-          enum: [OK, CROWDED, FULL]
