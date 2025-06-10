@@ -1,7 +1,7 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
-  title: Zone & Guest Simulation API
-  description: API for simulating guests and monitoring zone occupancy in a virtual park.
+  title: Zone Simulation API
+  description: API for monitoring and simulating guests in different zones
   version: 1.0.0
 
 servers:
@@ -13,33 +13,27 @@ paths:
       summary: Get all zones
       responses:
         '200':
-          description: A list of all zones
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Zone'
+          description: Returns all zone objects
 
   /zones/occupancy/{id}:
     get:
-      summary: Get occupancy status of a zone
+      summary: Get occupancy status for a specific zone
       parameters:
         - name: id
           in: path
           required: true
-          description: Zone ID
           schema:
             type: string
       responses:
         '200':
-          description: Zone status details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ZoneStatusDto'
-        '404':
-          description: Zone not found
+          description: Zone occupancy details
+
+  /zones/hotspots:
+    get:
+      summary: Get all crowded or full zones
+      responses:
+        '200':
+          description: List of hotspots
 
   /zones/averageTimeSpent/{id}:
     get:
@@ -48,32 +42,11 @@ paths:
         - name: id
           in: path
           required: true
-          description: Zone ID
           schema:
             type: string
       responses:
         '200':
-          description: Average duration
-          content:
-            application/json:
-              schema:
-                type: number
-                format: float
-        '404':
-          description: Zone not found
-
-  /zones/hotspots:
-    get:
-      summary: Get hotspots (zones that are crowded or full)
-      responses:
-        '200':
-          description: A list of crowded or full zones
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ZoneStatusDto'
+          description: Average time spent in the zone
 
   /zones/change-capacity/{id}:
     post:
@@ -82,40 +55,30 @@ paths:
         - name: id
           in: path
           required: true
-          description: Zone ID
           schema:
             type: string
         - name: newCapacity
           in: query
           required: true
-          description: New capacity for the zone
           schema:
             type: integer
       responses:
         '200':
           description: Capacity changed successfully
-        '400':
-          description: Invalid input or zone cannot shrink
 
   /guests:
     get:
-      summary: Get all active guests
+      summary: Get all guests in the park
       responses:
         '200':
-          description: A list of all current guests
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Guest'
+          description: List of guests
 
   /guests/simulate-move:
     post:
-      summary: Simulate guest movement
+      summary: Simulate moving 5 random guests
       responses:
         '200':
-          description: Guest movement simulated
+          description: Move simulation complete
         '500':
           description: Server error during simulation
 
