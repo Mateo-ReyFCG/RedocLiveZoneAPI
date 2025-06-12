@@ -84,7 +84,7 @@ paths:
         '204':
           description: No hotspots found
 
-  /zones/changeCapacity/{id}:
+  /zones/changeCapacity/{id}?newCapacity=1:
     post:
       summary: Change zone capacity
       tags:
